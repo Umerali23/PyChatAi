@@ -1,0 +1,4 @@
+# PyChat AI - dependencies
+
+# HTTP client used to talk to Ollama's local REST API.
+requests>=2.31.0
