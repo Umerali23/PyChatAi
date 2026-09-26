@@ -9,7 +9,7 @@ system prompt in more than one place.
 # --- Application ----------------------------------------------------------
 
 BOT_NAME: str = "PyChat AI"
-BOT_VERSION: str = "0.3.0"
+BOT_VERSION: str = "0.4.0"
 
 EXIT_COMMANDS: set[str] = {"exit", "quit", "q"}
 

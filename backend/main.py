@@ -1,23 +1,31 @@
 """
-PyChat AI - Milestone 3
+PyChat AI - Milestone 4
 
 FastAPI web server exposing:
 
-    GET  /           - basic info about the app
+    GET  /           - the frontend (index.html)
     GET  /health     - liveness check + Ollama status
+    GET  /api/info   - small JSON info about the API
     POST /api/chat   - send a message, get a reply
+
+The frontend folder is served from the same server, so no CORS issues
+and only one process to run.
 
 Run from the project root with:
 
     uvicorn backend.main:app --reload
 
-Interactive docs are then available at http://127.0.0.1:8000/docs
+Then open http://127.0.0.1:8000/ in your browser.
 """
 
 from __future__ import annotations
 
+import warnings
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
 from backend import ai, config
@@ -25,18 +33,23 @@ from backend.ai import AIServiceError
 
 
 # ---------------------------------------------------------------------------
-# Pydantic models — request and response schemas
+# Paths
+# ---------------------------------------------------------------------------
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+
+
+# ---------------------------------------------------------------------------
+# Pydantic models
 # ---------------------------------------------------------------------------
 
 class ChatMessage(BaseModel):
-    """One turn in a conversation."""
-
     role: str
     content: str = Field(
         ...,
         min_length=1,
         max_length=config.MAX_HISTORY_ITEM_LENGTH,
-        description="The text of the message.",
     )
 
     @field_validator("role")
@@ -49,18 +62,14 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    """Body of POST /api/chat."""
-
     message: str = Field(
         ...,
         min_length=1,
         max_length=config.MAX_MESSAGE_LENGTH,
-        description="The user's new message.",
     )
     history: list[ChatMessage] = Field(
         default_factory=list,
         max_length=config.MAX_HISTORY_MESSAGES,
-        description="Recent conversation history (oldest first).",
     )
 
     @field_validator("message")
@@ -83,6 +92,14 @@ class HealthResponse(BaseModel):
     version: str
 
 
+class InfoResponse(BaseModel):
+    name: str
+    version: str
+    docs: str
+    health: str
+    chat: str
+
+
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
@@ -103,18 +120,19 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
-# Routes
+# API routes — registered BEFORE the static mount so they take priority.
 # ---------------------------------------------------------------------------
 
-@app.get("/", tags=["meta"])
-def root() -> dict[str, str]:
-    """Landing endpoint — useful for a quick 'is it up?' check."""
-    return {
-        "name": config.BOT_NAME,
-        "version": config.BOT_VERSION,
-        "docs": "/docs",
-        "health": "/health",
-    }
+@app.get("/api/info", response_model=InfoResponse, tags=["meta"])
+def info() -> InfoResponse:
+    """Small JSON info endpoint about the API itself."""
+    return InfoResponse(
+        name=config.BOT_NAME,
+        version=config.BOT_VERSION,
+        docs="/docs",
+        health="/health",
+        chat="/api/chat",
+    )
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
@@ -132,9 +150,8 @@ def health() -> HealthResponse:
 def chat_endpoint(request: ChatRequest) -> ChatResponse:
     """
     Accept a user message plus optional history, ask Ollama, return the reply.
-
-    The server prepends the system prompt and trusts the client's history
-    ordering. History length is capped by ChatRequest itself.
+    The server prepends the system prompt; history length is capped by
+    ChatRequest itself.
     """
     messages: list[dict[str, str]] = [
         {"role": "system", "content": config.SYSTEM_PROMPT}
@@ -147,10 +164,26 @@ def chat_endpoint(request: ChatRequest) -> ChatResponse:
     try:
         reply = ai.chat(messages)
     except AIServiceError as exc:
-        # 503 = "the server is fine, but a dependency it needs is not."
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
         ) from exc
 
     return ChatResponse(reply=reply)
+
+
+# ---------------------------------------------------------------------------
+# Static frontend — mounted LAST so API routes above take precedence.
+# ---------------------------------------------------------------------------
+
+if FRONTEND_DIR.is_dir():
+    app.mount(
+        "/",
+        StaticFiles(directory=str(FRONTEND_DIR), html=True),
+        name="frontend",
+    )
+else:
+    warnings.warn(
+        f"Frontend directory not found at {FRONTEND_DIR}. "
+        "The web UI will not be served."
+    )

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyChat AI</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <div class="app">
+        <!-- ============ Sidebar ============ -->
+        <aside class="sidebar" id="sidebar" aria-label="Conversations">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-logo">Py</div>
+                    <div class="brand-name">PyChat AI</div>
+                </div>
+                <button class="new-chat-btn" id="new-chat-btn" type="button">
+                    <span class="new-chat-icon" aria-hidden="true">+</span>
+                    <span>New Chat</span>
+                </button>
+            </div>
+
+            <nav class="conversation-list" id="conversation-list"></nav>
+
+            <div class="sidebar-footer">
+                <div class="status" role="status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Checking…</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ============ Main chat panel ============ -->
+        <main class="chat">
+            <header class="chat-header">
+                <button class="menu-btn" id="menu-btn" type="button" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <h1 class="chat-title" id="chat-title">New conversation</h1>
+                <div class="chat-model" id="chat-model">—</div>
+            </header>
+
+            <section class="messages" id="messages" aria-live="polite"></section>
+
+            <section class="empty-state" id="empty-state">
+                <div class="empty-logo">Py</div>
+                <h2 class="empty-title">How can I help you today?</h2>
+                <p class="empty-subtitle">Ask anything. Your messages stay on this computer.</p>
+
+                <div class="suggestions" id="suggestions">
+                    <button class="suggestion" type="button"
+                            data-prompt="Explain what a Python virtual environment is, in simple terms.">
+                        <strong>Explain a concept</strong>
+                        <span>What is a Python virtual environment?</span>
+                    </button>
+                    <button class="suggestion" type="button"
+                            data-prompt="Write a short haiku about programming.">
+                        <strong>Be creative</strong>
+                        <span>Write a haiku about programming.</span>
+                    </button>
+                    <button class="suggestion" type="button"
+                            data-prompt="Give me three tips for learning Python faster.">
+                        <strong>Get advice</strong>
+                        <span>Three tips for learning Python faster.</span>
+                    </button>
+                    <button class="suggestion" type="button"
+                            data-prompt="What is the difference between a list and a tuple in Python?">
+                        <strong>Learn Python</strong>
+                        <span>List vs. tuple in Python?</span>
+                    </button>
+                </div>
+            </section>
+
+            <footer class="composer">
+                <form class="composer-form" id="composer-form">
+                    <textarea
+                        id="message-input"
+                        class="composer-input"
+                        placeholder="Message PyChat AI…"
+                        rows="1"
+                        autocomplete="off"
+                        spellcheck="true"
+                        aria-label="Message"
+                    ></textarea>
+                    <button type="submit" class="send-btn" id="send-btn"
+                            aria-label="Send message" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+                <p class="composer-hint">PyChat AI can make mistakes. Verify important information.</p>
+            </footer>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
