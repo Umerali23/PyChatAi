@@ -2,3 +2,10 @@
 
 # HTTP client used to talk to Ollama's local REST API.
 requests>=2.31.0
+
+# Web framework that turns Python functions into HTTP endpoints.
+fastapi>=0.115.0
+
+# ASGI server that actually listens on a port and runs FastAPI.
+# The [standard] extras include watchfiles (for --reload on Windows).
+uvicorn[standard]>=0.30.0

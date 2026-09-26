@@ -9,7 +9,7 @@ system prompt in more than one place.
 # --- Application ----------------------------------------------------------
 
 BOT_NAME: str = "PyChat AI"
-BOT_VERSION: str = "0.2.0"
+BOT_VERSION: str = "0.3.0"
 
 EXIT_COMMANDS: set[str] = {"exit", "quit", "q"}
 
@@ -27,11 +27,30 @@ DEFAULT_MODEL: str = "qwen2.5:1.5b"
 REQUEST_TIMEOUT: int = 120
 HEALTH_CHECK_TIMEOUT: int = 5
 
+# --- API ------------------------------------------------------------------
+
+# Origins allowed to call the API from a browser. During Milestone 4 the
+# frontend may be opened directly from disk (origin "null") or served by a
+# Live Server on port 5500. Listing them here now is harmless and avoids a
+# config edit later. When we serve the frontend from FastAPI itself, CORS
+# will no longer be required at all.
+ALLOWED_ORIGINS: list[str] = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
+
+# Hard caps for a single request. These are validation limits, not the
+# model's context window.
+MAX_MESSAGE_LENGTH: int = 4_000
+MAX_HISTORY_ITEM_LENGTH: int = 20_000
+
 # --- Conversation ---------------------------------------------------------
 
-# How many past messages to send with each request. Older messages are
-# dropped. This keeps requests small and prevents the model's context
-# window from overflowing during long chats.
+# How many past messages to accept from the client (and send to the model).
+# Older messages are dropped. This keeps requests small and prevents the
+# model's context window from overflowing during long chats.
 MAX_HISTORY_MESSAGES: int = 20
 
 # The system prompt tells the model how to behave. It is prepended to every
